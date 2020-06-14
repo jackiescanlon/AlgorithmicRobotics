@@ -1,0 +1,89 @@
+<launch>
+    <arg name="world_name" default="obstacle.world"/>
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+    <arg name="use_noise" default="false"/>
+
+    <rosparam file="$(find pa3_student)/config/r2d2.yaml" command="load"/>
+
+
+
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" ns="/r2d2" args="left_velocity_controller right_velocity_controller joint_state_controller"/>
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+        respawn="false" output="screen">
+        <remap from="/joint_states" to="/r2d2/joint_states"/>
+    </node>
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find pa3_student)/models/$(arg world_name)"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <group if="$(arg use_noise)">
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find pa3_student)/urdf/r2d2_noise.gazebo'" />
+  </group>
+  
+  <group unless="$(arg use_noise)">
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find pa3_student)/urdf/r2d2.gazebo'" />
+  </group>
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+args="-urdf -model r2d2 -param robot_description -x 0 -y 0 -z 0.225"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find pa3_student)/urdf.rviz" required="true" />
+    
+  <!-- Run Your scripts -->
+  
+  <!-- Run Our scripts -->
+    <remap from="/turtle1/cmd_vel" to="/r2d2/path_vel"/>
+    <remap from="/turtle1/pose" to="/r2d2/pose"/>
+    <node
+        pkg="turtlesim"
+        type="turtle_teleop_key"
+        name="turtle"
+        launch-prefix="xterm -e"
+    />
+
+    <node name="map_tf_node" 
+        pkg="pa3_student" 
+        type="map_frame.py"/>
+        
+    <node name="map_node"
+        pkg="pa3_student"
+        type="mapping.py"
+	output="screen"/>
+
+
+    <node
+        name="pose_node"
+        pkg="pa3_student"
+        type="r2d2_pose_remapper.py"
+    />
+
+    <node
+        name="driver_node"
+        pkg="pa3_student"
+        type="drive.py"
+    />
+
+    <node
+        name="vel_reg_node"
+        pkg="pa3_student"
+        type="velocity_regulator.py"
+    />
+  
+
+
+</launch>

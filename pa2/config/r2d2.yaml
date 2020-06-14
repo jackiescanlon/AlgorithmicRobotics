@@ -1,0 +1,12 @@
+r2d2:
+    joint_state_controller:
+        type: joint_state_controller/JointStateController
+        publish_rate: 50
+
+    left_velocity_controller:
+        type: velocity_controllers/JointVelocityController
+        joint: joint_left_wheel
+
+    right_velocity_controller:
+        type: velocity_controllers/JointVelocityController
+        joint: joint_right_wheel

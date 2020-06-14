@@ -1,0 +1,45 @@
+<launch>
+    <!-- change these arguments to adjust project name -->
+    <arg name="pkg" default="pa3_student" />
+    <arg name="use_noise" default="false"/>
+
+    <node
+        pkg="$(arg pkg)"
+        type="input.py"
+        name="trajectory_input"
+        launch-prefix="xterm -e"
+    />
+    
+    <node
+        pkg="turtlesim"
+        type="turtlesim_node"
+        name="turtle"
+    />
+    
+    <group if="$(arg use_noise)">
+        <remap from="/turtle1/cmd_vel" to="/turtle1/cmd_vel_noiseless"/>
+        <node
+            pkg="$(arg pkg)"
+            type="turtlejectory.py"
+            name="turtlejectory"
+        />
+    </group>
+    
+    <group unless="$(arg use_noise)">
+        <node
+            pkg="$(arg pkg)"
+            type="turtlejectory.py"
+            name="turtlejectory"
+	    output="screen"
+        />
+    </group>
+    
+    <group if="$(arg use_noise)"> 
+        <node
+            pkg="$(arg pkg)"
+            type="twist_noise.py"
+            name="twist_noise"
+        />
+    </group>
+    
+</launch>

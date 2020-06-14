@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>hello</name>
+  <version>1.0.0</version>
+  <description>The hello package</description>
+  <license>None</license>
+  <maintainer email="scanlj2@rpi.edu">Jackie Scanlon</maintainer>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>rospy</buildtool_depend>
+  <buildtool_depend>geometry msgs</buildtool_depend>
+  <buildtool_depend>turtlesim</buildtool_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>geometry msgs</exec_depend>
+  <exec_depend>turtlesim</exec_depend>
+  <export>
+  </export>
+</package>

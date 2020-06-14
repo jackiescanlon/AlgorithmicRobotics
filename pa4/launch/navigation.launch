@@ -1,0 +1,74 @@
+<launch>
+    <arg name="map_name" default="sparse_obstacles"/>
+    <arg name="x" default="3" />
+    <arg name="y" default="7.5" />
+    <arg name="theta" default="0" />
+    <arg name="pkg" default="pa4_student" />
+	<include file="$(find stdr_robot)/launch/robot_manager.launch" />
+
+    <node
+        type="stdr_server_node"
+        pkg="stdr_server"
+        name="stdr_server"
+        output="screen"
+        args="$(find pa4_student)/maps/$(arg map_name).yaml"
+    />
+
+    <node
+        pkg="tf"
+        type="static_transform_publisher"
+        name="world2map"
+        args="0 0 0 0 0 0  world map 100"
+    />
+
+    <include file="$(find stdr_gui)/launch/stdr_gui.launch"/>
+
+    <node
+        pkg="stdr_robot"
+        type="robot_handler"
+        name="$(anon robot_spawn)"
+        args="add $(find pa4_student)/simulation/robots/rectbot.yaml $(arg x) $(arg y) $(arg theta)"
+    />
+
+    <node
+        pkg="$(arg pkg)"
+        type="goal_input.py"
+        name="goal_input"
+        launch-prefix="xterm -e"
+    >
+        <remap from="/odom" to="/robot0/odom" />
+    </node>
+
+    <node
+        pkg="$(arg pkg)"
+        type="p2_score.py"
+        name="p2_score_node"
+    />
+
+    <node
+        pkg="$(arg pkg)"
+        type="score_board.py"
+        name="score_board_node"
+        launch-prefix="xterm -e"
+    />
+
+
+<!-- custom additions (modify below only) -->
+<!-- teleop key to start you off -->
+    <!--<node
+        pkg="turtlesim"
+        type="turtle_teleop_key"
+        name="turtle"
+        launch-prefix="xterm -e"
+    >
+        <remap from="/turtle1/cmd_vel" to="/robot0/cmd_vel" />
+    </node>-->
+
+    <node pkg="$(arg pkg)" type="prm.py" name="prm_node" output="screen" />
+
+    <node pkg="$(arg pkg)" type="path_follower.py" name="path_follower_node" output="screen" />
+
+    <!-- RVIZ -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find pa4_student)/navigation.rviz"/>
+
+</launch>

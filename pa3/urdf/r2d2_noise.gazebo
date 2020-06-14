@@ -1,0 +1,263 @@
+<?xml version='1.0'?>
+<robot name="r2d2">
+
+  <!-- Base Link -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+          <box size="1 0.5 0.25"/>
+      </geometry>
+    </visual>
+    <!-- Base collision, mass and inertia -->
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+          <box size="0.5 0.5 0.25"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5"/>
+      <inertia ixx="0.13" ixy="0.0" ixz="0.0" iyy="0.21" iyz="0.0" izz="0.13"/>
+    </inertial>
+
+    <!-- Caster1 -->
+    <visual name="caster1">
+      <origin xyz="-0.45 0 -0.123" rpy="0 0 0" /> <!-- -0.2 -->
+      <geometry>
+        <sphere radius="0.05" />
+      </geometry>
+    </visual>
+    <!-- Caster collision, mass and inertia -->
+    <collision>
+      <origin xyz="-0.45 0 -0.123" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.05" />
+      </geometry>
+      <surface>
+        <friction>
+          <ode>
+            <mu>0</mu>
+            <mu2>0</mu2>
+          </ode>
+        </friction>
+      </surface>
+    </collision>
+    <inertial>
+      <mass value="10"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+    
+    <!-- Caster1 -->
+    <visual name="caster2">
+      <origin xyz="0.45 0 -0.123" rpy="0 0 0" /> <!-- -0.2 -->
+      <geometry>
+        <sphere radius="0.05" />
+      </geometry>
+    </visual>
+    <!-- Caster collision, mass and inertia -->
+    <collision>
+      <origin xyz="0.45 0 -0.123" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.05" />
+      </geometry>
+      <surface>
+        <friction>
+          <ode>
+            <mu>0</mu>
+            <mu2>0</mu2>
+          </ode>
+        </friction>
+      </surface>
+    </collision>
+    <inertial>
+      <mass value="10"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+    
+
+  </link>
+
+  <gazebo reference="base_link">
+    <material>Gazebo/Blue</material>
+    <pose>0 0 3 0 0 0</pose>
+  </gazebo>
+
+  <!-- Right Wheel -->
+  <link name="right_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" />
+      <geometry>
+          <cylinder length="0.1" radius="0.2" />
+      </geometry>
+    </visual>
+    <!-- Right Wheel collision, mass and inertia -->
+    <collision>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" />
+      <geometry>
+          <cylinder length="0.1" radius="0.2" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+    </inertial>
+
+  </link>
+
+  <gazebo reference="right_wheel">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <!-- Right Wheel joint -->
+  <joint name="joint_right_wheel" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0. -0.30 0.025" rpy="0 0 0" /> <!-- 0 -->
+    <axis xyz="0 1 0" />
+    <dynamics damping="10000" friction="1000"/>
+  </joint>
+
+  <!-- Left Wheel -->
+  <link name="left_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" /> <!-- xyz = 0 0 0 -->
+      <geometry>
+          <cylinder length="0.1" radius="0.2" />
+      </geometry>
+    </visual>
+    <!-- Left Wheel collision, mass and inertia -->
+    <collision>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" />
+      <geometry>
+          <cylinder length="0.1" radius="0.2" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+    </inertial>
+
+  </link>
+
+  <gazebo reference="left_wheel">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <!-- Left Wheel joint -->
+  <joint name="joint_left_wheel" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0. 0.30 0.025" rpy="0 0 0" /> <!-- xyz= 0 0 0-->
+    <axis xyz="0 1 0"/>
+    <dynamics damping="10000" friction="1000"/>
+  </joint>
+  
+  <transmission name="trans_left">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_left_wheel">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </joint>
+        <actuator name="actuator_left">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans_right">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_right_wheel">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </joint>
+        <actuator name="actuator_right">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+  <!-- Hokuyo Laser -->
+  <link name="hokuyo_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+
+    <!--<inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial> -->
+  </link>  
+  
+  <joint name="hokuyo_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0.27 0 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="hokuyo_link"/>
+  </joint>
+  
+  <!-- hokuyo -->
+  <gazebo reference="hokuyo_link">
+    <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>10</samples>
+            <resolution>1</resolution>
+            <min_angle>-.1</min_angle> <!--1.570796 -->
+            <max_angle>.1</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.1</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/r2d2/laser/scan</topicName>
+        <frameName>hokuyo_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+  
+<!-- Groundtruth plugin -->
+  <gazebo>
+  <plugin name="robot_groundtruth_sim" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>groundtruth</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>world</frameName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+    </plugin>
+  </gazebo>
+  
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/r2d2</robotNamespace>
+    </plugin>
+  </gazebo>
+
+</robot>

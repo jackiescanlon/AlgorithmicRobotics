@@ -1,0 +1,83 @@
+<launch>
+    <arg name="world_name" default="empty.world"/>
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+
+    <!-- change these arguments to adjust project name -->
+    <arg name="pwd" default="$(find pa2_student)" />
+    <arg name="pkg" default="pa2_student" />
+
+    <rosparam file="$(arg pwd)/config/r2d2.yaml" command="load"/>
+
+    <!-- connects left and right wheels to a publisher -->
+    <node
+        name="controller_spawner"
+        pkg="controller_manager"
+        type="spawner"
+        respawn="false"
+        output="screen"
+        ns="/r2d2"
+        args="left_velocity_controller right_velocity_controller joint_state_controller"
+    />
+
+    <node
+        name="robot_state_publisher"
+        pkg="robot_state_publisher"
+        type="robot_state_publisher"
+        respawn="false"
+        output="screen"
+    >
+        <remap from="/joint_states" to="/r2d2/joint_states"/>
+    </node>
+
+    <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg pwd)/models/$(arg world_name)"/>
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="gui" value="$(arg gui)" />
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+    <param
+        name="robot_description"
+        command="$(find xacro)/xacro --inorder '$(arg pwd)/urdf/r2d2.gazebo'"
+    />
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+    <node
+        name="urdf_spawner"
+        pkg="gazebo_ros"
+        type="spawn_model"
+        respawn="false"
+        output="screen"
+        args="-urdf -model r2d2 -param robot_description -x 0 -y 0 -z 0.225"
+    />
+
+    <!-- run rviz node -->
+    <node
+        name="rviz"
+        pkg="rviz"
+        type="rviz"
+        args="-d $(arg pwd)/urdf.rviz"
+        required="true"
+    />
+
+    <!-- Run Our scripts -->
+    <node
+        name="pose_node"
+        pkg="$(arg pkg)"
+        type="pose_change.py"
+    />
+    <node
+        name="vel_reg_node"
+        pkg="$(arg pkg)"
+        type="velocity_regulator.py"
+    />
+
+</launch>

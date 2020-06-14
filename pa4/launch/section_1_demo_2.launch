@@ -1,0 +1,70 @@
+<launch>
+    <arg name="map_name" default="sparse_obstacles"/>
+    <arg name="view_rviz" default="true"/>
+    <arg name="scan" default="/robot0/scan"/>
+    <arg name="_base_frame" default="/robot0"/>
+    <arg name="map" default="/gmapping/map"/>
+    <arg name="cmd_vel" default="robot0/cmd_vel"/>
+    <arg name="control_noise" default="true"/>
+    <arg name="lidar_noise" default="true"/>
+    <arg name="landmark_noise" default="true"/>
+
+    <arg name="static" default="true" />
+    <arg name="dynamic" default="false" />
+
+    <arg name="gmapping" default="false"/>
+    <arg name="kalman" default="true"/>
+    <arg name="dead" default="false" />
+
+    <!-- Simulator -->
+	<include file="$(find stdr_robot)/launch/robot_manager.launch" />
+	
+	<node type="stdr_server_node" pkg="stdr_server" name="stdr_server" output="screen" args="$(find pa4_student)/maps/$(arg map_name).yaml"/>
+
+	<node pkg="tf" type="static_transform_publisher" name="world2map" args="0 0 0 0 0 0  world map 100" />
+	
+	<include file="$(find stdr_gui)/launch/stdr_gui.launch"/>
+	
+	<node pkg="stdr_robot" type="robot_handler" name="$(anon robot_spawn)" args="add $(find pa4_student)/simulation/robots/robot_0.yaml 1 2 0" />
+	
+   	<!-- Occupancy Grid -->
+	<group if="$(arg static)">
+		<node pkg="pa4_student" name="mapping_node" type="mapping.py" output="screen">
+		<remap from="/my_static_map" to="/p1_demo2/answer" />
+		</node>
+	</group>
+
+	<group if="$(arg dynamic)">
+		<node pkg="pa4_student" name="dynamic_mapping_node" type="dynamic_mapping.py" output="screen"/>
+	</group>
+
+	<!-- Localization -->
+	<group if="$(arg kalman)">
+		<node pkg="pa4_student" name="kalman_filter_node" type="kalman_filter.py" output="screen" />
+	</group>
+
+	<!-- Dead Reckoning -->
+	<group if="$(arg dead)">
+		<node pkg="pa4_student" name="dead_reckoning_node" type="dead_reckoning.py" output="screen" />
+	</group>
+
+	<!-- RVIZ -->
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find pa4_student)/slam.rviz"/>
+
+	<!-- Run original code -->
+	<group if="$(arg gmapping)">
+		<!-- Mapping -->
+		<node pkg="gmapping" type="slam_gmapping" name="mapping_node" args="scan:=/robot0/scan _base_frame:=/robot0 map:=/gmapping/map" />
+	</group>
+	
+	<!-- Landmarks -->
+	<node pkg="pa4_student" name="landmark_node" type="landmarks_demo.py" args="$(arg landmark_noise)" output="screen"/>
+	
+	<!-- Noise -->
+	<node pkg="pa4_student" name="slam_noise_node" type="slam_noise.py" args="$(arg control_noise) $(arg lidar_noise)"/>
+
+    <!-- Scoring -->
+    <node pkg="pa4_student" type="p1_score.py" name="p1_score_node" />
+    <node pkg="pa4_student" type="score_board.py" name="score_board_node" launch-prefix="xterm -e" />
+
+</launch>

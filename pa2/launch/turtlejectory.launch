@@ -1,0 +1,22 @@
+<launch>
+    <!-- change these arguments to adjust project name -->
+    <arg name="pkg" default="pa2_student" />
+    
+    <node
+        pkg="$(arg pkg)"
+        type="input.py"
+        name="trajectory_input"
+        launch-prefix="xterm -e"
+    />
+    <node
+        pkg="turtlesim"
+        type="turtlesim_node"
+        name="turtle"
+    />
+    <node
+        pkg="$(arg pkg)"
+        type="turtlejectory.py"
+        name="turtlejectory"
+	output="screen"
+    />
+</launch>
