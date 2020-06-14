@@ -2,7 +2,7 @@
 
 Spring 2019 - Professor Trinkle
 
-[VIDEO]()
+// Video coming soon //
 
 Learned algorithms and techniques used in the field of mobile robotics for perception, planning, and control. The topics include: representation of position and orientation, trajectory generation, ROS (Robot Operating System), motion control, obstacle avoidance, the “bug” algorithms, simultaneous localization and mapping (SLAM), and basic motion planning.
 
